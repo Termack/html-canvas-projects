@@ -1,0 +1,223 @@
+<html>
+<canvas id="gameCanvas" width="570" height="600"></canvas>
+<script>
+var canvas
+var canvasCtx
+var shipX = 5
+var keyPressed = {}
+var leftArrow = 37
+var rightArrow = 39
+var numBullets = 0
+var upArrow = 38
+var bulletX = 0
+var bulletY = 0
+var shootCd = 0
+var bullets = []
+var aliens = []
+var alienXSpeed = 3
+var alienYSpeed = 0
+var goDown = false
+var startScreen = true
+var whoWon = 0
+
+window.onload = function(){
+	console.log("Hello world!")
+	canvas = document.getElementById('gameCanvas')
+	canvasCtx = canvas.getContext('2d')
+	canvas.addEventListener('mousedown',clickScreen)
+	document.addEventListener('keydown',function(evt){
+		keyPressed[evt.keyCode] = true
+	})
+	document.addEventListener('keyup',function(evt){
+		delete keyPressed[evt.keyCode]
+	})
+	setInterval(function(){update(),draw()},1000/30)
+	}
+
+	function clickScreen(){
+		if(startScreen == true){
+		startScreen = false
+		whoWon = 0
+		for(var i=27;i >= 0;i--){
+		var alien = new Alien(getAlienX(i) ,getAlienY(i))
+		aliens.push(alien)
+		}
+	}
+	}
+	
+function Alien(X,Y){
+	this.x = X
+	this.y = Y
+	this.isDead = false
+	this.show = function(){
+		drawRect(this.x,this.y,30,20,'red')
+	}
+	if(startScreen == false){
+	this.move = function(){
+		this.x += alienXSpeed
+	}
+	}
+	this.destroy = function(){
+		this.isDead = true
+	}
+}
+
+function getAlienX(I){
+	if(I < 7){
+		return I*60+20
+	}else if(I < 14){
+		return (I-7)*60+20
+	}else if(I < 21){
+		return (I-14)*60+20
+	}else{
+		return (I-21)*60+20
+	}
+}
+function getAlienY(I){
+	if(I >=21){
+		return 140
+	}else if(I >= 14){
+		return 100
+	}else if(I >= 7){
+		return 60
+	}else{
+		return 20
+	}
+}
+	
+function Bullet(){
+	this.isDead = false
+	this.x = shipX + 23
+	this.y = canvas.height - 25
+	this.show = function(){
+		drawRect(this.x,this.y,4,10,'white')
+	}
+	this.move = function(){
+		this.y -= 5
+	}
+	this.collide = function(obj){
+		if(this.y < obj.y + 20 && this.y + 10 > obj.y && this.x > obj.x - 4 && this.x < obj.x + 30){
+			return true
+		}else{
+			return false
+		}
+	}
+	this.destroy = function(){
+		this.isDead = true
+	}
+}
+
+function endGame(){
+	startScreen = true
+	alienXSpeed = 3
+	for(var j=0;j<bullets.length;j++){
+		bullets[j].destroy()
+	}
+	for(var v=0;v<aliens.length;v++){
+		aliens[v].destroy()
+	}
+}
+	
+function update(){
+	if(startScreen == false){
+	shootCd ++
+	if(aliens.length < 1){
+		endGame()
+		whoWon = 1
+	}
+	for(var i=aliens.length-1;i>=0;i--){
+	if(aliens[i].y > canvas.height - 35){
+		endGame()
+		whoWon = 2
+		}
+		if(aliens[i].x < 0 || aliens[i].x > canvas.width - 30){
+			alienXSpeed = -alienXSpeed
+			goDown = true
+			for(var v=aliens.length-1;v>=0;v--){
+				aliens[v].x += alienXSpeed
+				if(goDown){
+				aliens[v].y += 30
+				}
+				if(v==0){
+				goDown = false
+				}
+			}
+		}
+	}
+	if(keyPressed[upArrow]){
+		if(shootCd >= 15){
+		var bullet = new Bullet()
+		bullets.push(bullet)
+		shootCd = 0
+		}
+	}
+	if(keyPressed[rightArrow]){
+	if(shipX + 50 < canvas.width){
+	shipX = shipX + 5
+	}
+	} else if(keyPressed[leftArrow]){
+		if(shipX > 0){
+		shipX = shipX - 5
+	}
+	}
+	}
+}
+
+function draw(){
+	drawRect(0,0,canvas.width,canvas.height,'black')
+	if(startScreen){
+		drawText("Space invaders",50,100,"white","65px Arial")
+		drawText("Click to continue",150,400,"white","30px Arial")
+		if(whoWon == 1){
+			drawText("You won, congratulations",75,450,"white","35px Arial")
+		}else if(whoWon == 2){
+			drawText("You lost :(",180,450,"white","35px Arial")
+		}
+	}
+	drawRect(shipX,canvas.height - 15,50,10,'white')
+	for(var i=0;i<aliens.length;i++){
+	aliens[i].show()
+	aliens[i].move()
+	}
+	for(var i=0;i<bullets.length;i++){
+		bullets[i].show()
+		bullets[i].move()
+		if(bullets[i].y < -10){
+			bullets[i].destroy()
+		}
+		for(var v=0;v<aliens.length;v++){
+			if(bullets[i].collide(aliens[v])){
+				if(alienXSpeed < 0){
+					alienXSpeed -= 0.2
+				}else{
+					alienXSpeed += 0.2
+				}
+				bullets[i].destroy()
+				aliens[v].destroy()
+			}
+		}
+	}
+	for(var i = aliens.length - 1;i>=0;i--){
+		if(aliens[i].isDead){
+			aliens.splice(i,1)
+		}
+	}
+	for(var i = bullets.length - 1;i>=0;i--){
+		if(bullets[i].isDead){
+			bullets.splice(i,1)
+		}
+	}
+}
+
+function drawText(text,X,Y,color,font){
+	canvasCtx.font = font
+	canvasCtx.fillStyle = color
+	canvasCtx.fillText(text,X,Y)
+}
+
+function drawRect(X,Y,width,height,color){
+	canvasCtx.fillStyle = color
+	canvasCtx.fillRect(X,Y,width,height)
+}
+</script>
+</html>

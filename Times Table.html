@@ -1,0 +1,70 @@
+<html>
+<canvas id="bg" width="800" height="600"></canvas>
+<script>
+var canvas;
+var ctx;
+var centerx = 400;
+var centery = 300;
+var radius = 280;
+var points = [];
+var number = 1;
+
+window.onload = function(){
+	canvas = document.getElementById("bg");
+	ctx = canvas.getContext("2d");
+	ctx.fillStyle = "black";
+	ctx.fillRect(0,0,canvas.width,canvas.height);
+	canvas.addEventListener('mousedown',clickScreen);
+	update(number);
+	
+}
+
+function clickScreen(){
+	points.splice(0,points.length);
+	number ++;
+	update(number);
+}
+
+function update(num){
+
+	ctx.fillStyle = "black";
+	ctx.fillRect(0,0,canvas.width,canvas.height);
+	ctx.fillStyle = "rgb(255,100,0)";
+	ctx.font="20px Georgia";
+	ctx.fillText(number,700,50);
+	
+	for(var i=0;i<=360;i+= 1){
+		var point = new drawPoint(i);
+		points.push(point);
+	}
+	for(var i=0;i<points.length;i ++){
+		line(points[i].x,points[i].y,points[(i*num) % (points.length - 1)].x,points[(i*num) % (points.length - 1)].y);
+		}
+}
+
+function drawCircle(){
+    ctx.beginPath();
+    ctx.arc(centerx, centery, radius , 0, 2*Math.PI);
+	ctx.strokeStyle = "rgb(255,100,0)";
+    ctx.stroke();
+}
+
+function drawPoint(angle){
+	this.x = centerx - radius * Math.cos(angle*Math.PI/180);
+	this.y = centery - radius * Math.sin(angle*Math.PI/180);
+	
+	ctx.beginPath();
+    ctx.arc(this.x, this.y, 0.5, 0, 2*Math.PI);
+	ctx.fillStyle = "rgb(255,100,0)";
+    ctx.fill();
+}
+
+function line(X0,Y0,Xf,Yf){
+	ctx.beginPath();
+	ctx.moveTo(X0,Y0);
+	ctx.lineTo(Xf,Yf);
+	ctx.strokeStyle = "rgb(255,100,0)";
+	ctx.stroke();
+}
+</script>
+</html>

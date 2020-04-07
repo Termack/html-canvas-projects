@@ -1,0 +1,91 @@
+<html>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<script>
+var canvas;
+var ctx;
+var baseY = 550;
+var ballY = 100;
+var ballYSpeed = -20;
+var gAcc = 2;
+var balls = [];
+var cd = 0;
+
+window.onload = function(){
+	canvas = document.getElementById("gameCanvas");
+	ctx = canvas.getContext("2d");
+	setInterval(function(){draw(),update()},1000/30);
+}
+
+function Ball(){
+	var ballStop = false
+	this.ySpeed = ((Math.random() * 10)+1) - ((Math.random() * 20)+1)
+	this.x = ((Math.random() * 750)+20)
+	this.y = -((Math.random() * 30)+1)
+	this.r = ((Math.random() * 9)+2)
+	this.show = function(){
+		drawBall(this.x,this.y,this.r,"rgb(200,40,40)");
+	}
+	this.update = function(){
+		if(ballStop == false){
+		this.ySpeed += gAcc;
+		}
+		this.y += this.ySpeed;
+		if(this.y + this.r >= baseY){
+		if(this.ySpeed <= 2 && ballYSpeed >= -2){
+			this.y = baseY - this.r;
+			this.ySpeed = 0;
+			ballStop = true;
+		}else{
+			ballStop = false;
+			this.y = baseY - this.r;
+			this.ySpeed = -this.ySpeed;
+		}
+	}
+	}
+}
+
+function update(){
+	cd ++
+	if(cd >= 30){
+	var ball = new Ball;
+	balls.push(ball);
+	cd = 0;
+	}
+	for(var k=0;k<balls.length;k++){
+	for(var i=0;i<balls.length;i++){
+			if(balls[i] != balls[k]){
+			var dx = balls[i].x - balls[k].x;
+			var dy = balls[i].y - balls[k].y;
+			var distance = Math.sqrt(dx*dx + dy*dy);
+			
+			if(distance < balls[i].r + balls[k].r){
+				console.log("collision detected")
+			}
+		}
+	}
+	}
+}
+
+function draw(){
+	drawRect(0,0,canvas.width,canvas.height,"rgb(0,0,0)");
+	for(var i=balls.length - 1;i>=0;i--){
+		balls[i].show();
+		balls[i].update();
+	}
+	drawRect(0,baseY,canvas.width,50,"rgb(51,51,51)");
+}
+
+function drawBall(X,Y,r,color){
+	ctx.fillStyle = color;
+	ctx.beginPath();
+	ctx.arc(X,Y,r,0,Math.PI*2,true);
+	ctx.fill();
+}
+
+function drawRect(X,Y,width,height,color){
+	ctx.fillStyle = color;
+	ctx.fillRect(X,Y,width,height);
+}
+
+</script>
+</html>

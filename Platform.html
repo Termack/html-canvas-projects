@@ -1,0 +1,143 @@
+<html>
+<canvas id="bg" width="800" height="600"></canvas>
+<script>
+var canvas;
+var ctx;
+var pallet = [];
+var player;
+var groundE = [];
+var gravity = 2;
+var yspeed = 0;
+var collision = false;
+var keyPress = {};
+
+window.onload = function(){
+	canvas = document.getElementById("bg");
+	ctx = canvas.getContext("2d");
+	setInterval(function(){update();draw()},1000/30);
+	document.addEventListener("keydown",function(evt){
+		keyPress[evt.keyCode] = true;
+	});
+	document.addEventListener("keyup",function(evt){
+		delete keyPress[evt.keyCode];
+	});
+	pallet[0] = {
+		width: 200,
+		height: 5,
+		x: 2.5,
+		y: canvas.height - 7.5
+	}
+	pallet[1] = {
+		width: 50,
+		height: 5,
+		x: pallet[0].width + 30,
+		y: canvas.height - 40
+	}
+	pallet[2] = {
+		width: 50,
+		height: 5,
+		x: pallet[1].x + pallet[1].width + 30,
+		y: canvas.height - 80
+	}
+	pallet[3] = {
+		width: 50,
+		height: 5,
+		x: pallet[2].x + pallet[2].width + 30,
+		y: canvas.height - 120
+	}
+	pallet[4] = {
+		width: 50,
+		height: 5,
+		x: pallet[3].x + pallet[3].width + 30,
+		y: canvas.height - 160
+	}
+	pallet[5] = {
+		width: 200,
+		height: 15,
+		x: canvas.width - 202.5,
+		y: canvas.height - 17.5
+	}
+	player = {
+		width: 10,
+		height: 10,
+		x: pallet[0].x,
+		y: pallet[0].y - 40
+	}
+	groundE[0] = {
+		width: 10,
+		height:10,
+		x: pallet[2].x + 10,
+		y: pallet[2].y - 10,
+		pallet: 2,
+		speed: 2
+	}
+	groundE[1] = {
+		width: 10,
+		height:10,
+		x: pallet[1].x + 10,
+		y: pallet[1].y - 10,
+		pallet: 1,
+		speed: 1
+	}
+}
+
+function update(){
+	yspeed -= gravity;
+	player.y -= yspeed;
+	if(player.x < - player.width){
+		player.x = canvas.width;
+	}else if(player.x > canvas.width){
+		player.x = -player.width;
+	}
+	if(keyPress[39]){
+		player.x += 4;
+	}else if(keyPress[37]){
+		player.x -= 4;
+	}
+	for(var i=0;i<groundE.length;i++){
+		groundE[i].x += groundE[i].speed;
+			if(player.x + player.width >= groundE[i].x && player.x <= groundE[i].x + groundE[i].width && player.y + player.height >= groundE[i].y && player.y <= groundE[i].y + groundE[i].height){
+				groundE.splice(i,1)
+				if(keyPress[38]){
+					yspeed = 20;
+				}else{
+					yspeed = 10;
+				}
+			}
+			if(groundE[i].x <= pallet[groundE[i].pallet].x || groundE[i].x >= pallet[groundE[i].pallet].x + pallet[groundE[i].pallet].width - groundE[i].width){
+				groundE[i].speed = -groundE[i].speed;
+			}
+	}
+	for(var i=0;i<pallet.length;i++){
+		if(player.x + player.width >= pallet[i].x && player.x <= pallet[i].x + pallet[i].width && player.y + player.height >= pallet[i].y && player.y <= pallet[i].y + pallet[i].height){
+			player.y = pallet[i].y - 10;
+			yspeed = 0;
+			if(keyPress[38]){
+				yspeed = 20;
+			}
+		}
+	}
+	if(player.y >= canvas.height + player.height){
+		yspeed = 0;
+		player.x = pallet[0].x;
+		player.y = pallet[0].y - 40
+	}
+}
+
+function draw(){
+	drawRect(0,0,canvas.width,canvas.height,"rgb(51,51,51)");
+	drawRect(player.x,player.y,player.width,player.height,"rgb(251,151,51)");
+	for(var i=0;i<pallet.length;i++){
+		drawRect(pallet[i].x,pallet[i].y,pallet[i].width,pallet[i].height,"white");
+	}
+	for(var i=0;i<groundE.length;i++){
+		drawRect(groundE[i].x,groundE[i].y,groundE[i].width,groundE[i].height,"rgb(255,0,0)");
+	}
+}	
+
+function drawRect(x,y,width,height,color){
+	ctx.fillStyle = color;
+	ctx.fillRect(x,y,width,height);
+}
+</script>
+</html>

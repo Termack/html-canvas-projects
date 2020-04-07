@@ -1,0 +1,86 @@
+<html>
+<canvas id="bg" width="640" height="640"></canvas>
+<script>
+var canvas;
+var ctx;
+var imgd;
+var pix;
+var zoomF = 2.5;
+var zoom0 = 2.5;
+var infCheck = 2000;
+
+window.onload = function(){
+	canvas = document.getElementById("bg");
+	ctx = canvas.getContext("2d");
+	ctx.fillStyle = "orange";
+	ctx.fillRect(0,0,canvas.width,canvas.height);
+	canvas.addEventListener('mousedown',clickScreen);
+	update();
+}
+
+function clickScreen(){
+	if(zoom0 > 1){
+	zoom0 = zoom0 / 1.2;
+	}else if(zoom0 > 0.58){
+	zoom0 = zoom0 / 1.1;
+	console.log(zoom0);
+	}else if(zoom0 > 0.52){
+	zoom0 = zoom0 / 1.05;
+	console.log(zoom0);
+	}else if(zoom0 > 0.512){
+	zoom0 = zoom0 / 1.001;
+	console.log(zoom0);
+	}else if(zoom0 > 0.5114){
+	zoom0 = zoom0 / 1.00005;
+	console.log(zoom0);
+	}else if(zoom0 > 0.51135){
+	zoom0 = zoom0 / 1.00001;
+	console.log(zoom0);
+	}
+	zoomF = zoomF / 1.5;
+	update();
+}
+
+function update(){
+	for(var x = 0;x<canvas.width;x++){
+	for(var y = 0;y<canvas.height;y++){
+	imgd = ctx.getImageData(x, y,1,1);
+	pix = imgd.data;
+	
+	var a = -zoom0 + (x/canvas.width)*2*zoomF;
+	var b = -zoom0 + (y/canvas.width)*2*zoomF;
+	
+	var n = 0;
+	
+	var ca = a;
+	var cb = b;
+	
+	while(n<infCheck){
+		var aa = a*a - b*b;
+		var bb = 2*a*b;
+		a = aa + ca;
+		b = bb + cb;
+		if(a+b > 10000000){
+			break;
+		}
+		n++;
+	}
+	
+	var bright = n * (255/infCheck);
+	if(n === infCheck){
+		bright = 0;
+	}
+	
+
+	for (var i = 0; i < pix.length; i += 4) {
+    pix[i] = bright;
+    pix[i+1] = bright;
+    pix[i+2] = bright;
+}
+
+ctx.putImageData(imgd, x, y);
+}
+}
+}
+</script>
+</html>

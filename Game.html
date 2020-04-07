@@ -1,0 +1,122 @@
+<html>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<script>
+var canvas
+var canvasContext
+var ballX = 395
+var ballXSpeed = 10
+var ballY = 295
+var ballYSpeed = 9
+var paddle1Y = 210
+var PADDLE_HEIGHT = 100
+var paddle2Y = 210
+var paddle2Speed = 7
+var score1 = 0
+var score2 = 0
+var winScreen = false
+
+function calculateMousePos(evt){
+	var rect = canvas.getBoundingClientRect()
+	var root = document.documentElement
+	var mouseX = evt.clientX - rect.left - root.scrollLeft
+	var mouseY = evt.clientY - rect.top - root.scrollTop
+	return {x:mouseX, y:mouseY}
+}
+
+window.onload = function(){
+	canvas = document.getElementById('gameCanvas')
+	canvasContext = canvas.getContext('2d')
+	setInterval(function(){move(), draw()},1000/30)
+	canvas.addEventListener('mousedown',clickScreen)
+	canvas.addEventListener('mousemove',
+		function(evt){
+			var mousePos = calculateMousePos(evt)
+			paddle1Y = mousePos.y
+		})
+	}
+	
+function clickScreen(){
+	winScreen = false
+	score1 = 0
+	score2 = 0
+}
+	
+function move(){
+	if (winScreen == false){
+	ballX = ballX - ballXSpeed
+	ballY = ballY + ballYSpeed
+
+	if(ballY > paddle2Y){
+		paddle2Y = paddle2Y + paddle2Speed
+	}else{
+		paddle2Y = paddle2Y - paddle2Speed
+	}
+	if(ballY > paddle1Y - PADDLE_HEIGHT/2 && ballY < paddle1Y+PADDLE_HEIGHT/2 && ballX<35){
+		ballXSpeed = -ballXSpeed
+	}
+	if(ballY > paddle2Y - PADDLE_HEIGHT/2 && ballY < paddle2Y+PADDLE_HEIGHT/2 && ballX>canvas.width - 35){
+		ballXSpeed = -ballXSpeed
+	}
+	if(ballX > canvas.width + 10){
+		ballX = canvas.width/2
+		ballY = canvas.height/2
+		score1 = score1 + 1
+		if(score1 >= 3){
+			winScreen = true
+		}
+		ballXSpeed = -ballXSpeed
+	}
+	if(ballX < 0){
+		ballX = canvas.width/2
+		ballY = canvas.height/2
+		score2 = score2 + 1
+		if(score2 >= 3){
+			winScreen = true
+		}
+		ballXSpeed = -ballXSpeed
+		}
+	if(ballY > canvas.height - 10){
+		ballYSpeed = -ballYSpeed
+	}
+	if(ballY < 10){
+		ballYSpeed = -ballYSpeed
+	}
+}
+}
+
+function draw(){
+	drawRect(0,0,canvas.width,canvas.height,'black')
+	if(winScreen == true){
+		if(score1 >= 3){
+			drawText("You won",235,250,'white')
+		}else if(score2 >= 3){
+			drawText("You lost",235,250,'white')
+		}
+		drawText("Game ended, click to continue",235,225,'white')
+	}
+	drawText(score1,150,125,'white')
+	drawText(score2,canvas.width - 150,125,'white')
+	drawRect(10,paddle1Y - PADDLE_HEIGHT/2,15,PADDLE_HEIGHT,'white')
+	drawRect(canvas.width - 25,paddle2Y - PADDLE_HEIGHT/2,15,PADDLE_HEIGHT,'white')
+	canvasContext.fillStyle = 'white'
+	canvasContext.beginPath()
+	canvasContext.arc(ballX,ballY,10,0,Math.PI*2,true)
+	canvasContext.fill()
+	drawLine()
+}
+function drawText(text,X,Y,color){
+	canvasContext.font = "24px Arial"
+	canvasContext.fillStyle = color
+	canvasContext.fillText(text,X,Y)
+}
+function drawRect(X,Y,width,height,color){
+	canvasContext.fillStyle = color
+	canvasContext.fillRect(X,Y,width,height,color)
+}
+function drawLine(){
+	for(var i=0;i<=canvas.height;i+=150){
+		drawRect(canvas.width/2 - 1,i-25,2,50,'white')
+	}
+}
+</script>
+</html>
